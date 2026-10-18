@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#14251e">
+  <title>Поймай кружок</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px 16px; min-height: 100vh; min-height: 100svh; background: #f3f5ef; color: #14251e; font-family: system-ui, sans-serif; }
+    main { max-width: 600px; margin: auto; }
+    .eyebrow { margin: 0 0 12px; color: #516256; font-size: 12px; font-weight: 700; letter-spacing: .15em; }
+    h1 { margin: 0; font-size: clamp(32px, 7vw, 48px); letter-spacing: -.05em; }
+    .intro { color: #516256; line-height: 1.5; }
+    .stats { display: flex; gap: 12px; margin: 24px 0 16px; }
+    .stat { flex: 1; padding: 14px 18px; background: white; border: 1px solid #dbe2d7; border-radius: 16px; }
+    .stat span { display: block; font-size: 13px; color: #516256; }
+    .stat strong { display: block; margin-top: 4px; font-size: 30px; font-variant-numeric: tabular-nums; }
+    #field { position: relative; height: clamp(220px, 45svh, 420px); overflow: hidden; border: 1px solid #cdd7c9; border-radius: 24px; background: #e5ecdf; background-image: radial-gradient(#c4d0bd 1px, transparent 1px); background-size: 22px 22px; }
+    #hint { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: #516256; pointer-events: none; }
+    #target { position: absolute; width: 64px; height: 64px; padding: 0; border: 4px solid #fff; border-radius: 50%; background: #ec6943; box-shadow: 0 4px 0 #b94a2a, 0 8px 20px #14251e26; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; }
+    #target[hidden] { display: none; }
+    button:focus-visible { outline: 3px solid #14251e; outline-offset: 4px; }
+    #start { width: 100%; min-height: 54px; margin-top: 16px; border: 0; border-radius: 16px; background: #14251e; color: white; font: 700 17px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; }
+    #start:disabled { opacity: .65; cursor: default; }
+    #status { min-height: 48px; margin: 14px 0 0; text-align: center; line-height: 1.5; }
+    footer { margin-top: 12px; text-align: center; color: #516256; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">МИНИ-ИГРА · 30 СЕКУНД</p>
+    <h1>Поймай кружок</h1>
+    <p class="intro">Нажимай на кружок мышью или пальцем.<br>Каждое попадание — одно очко!</p>
+    <div class="stats">
+      <div class="stat"><span>Счёт</span><strong id="score">0</strong></div>
+      <div class="stat"><span>Осталось секунд</span><strong id="time" role="timer">30</strong></div>
+    </div>
+    <div id="field" aria-label="Игровое поле">
+      <div id="hint">Нажми «Начать игру» — и лови!</div>
+      <button id="target" type="button" aria-label="Поймать кружок" hidden></button>
+    </div>
+    <button id="start" type="button">Начать игру</button>
+    <p id="status" role="status" aria-live="polite">Сколько кружков успеешь поймать?</p>
+    <footer>Без установки · Можно играть без интернета</footer>
+  </main>
+  <script>
+    'use strict';
+    const field = document.getElementById('field');
+    const target = document.getElementById('target');
+    const start = document.getElementById('start');
+    const scoreView = document.getElementById('score');
+    const timeView = document.getElementById('time');
+    const hint = document.getElementById('hint');
+    const status = document.getElementById('status');
+    let score = 0;
+    let running = false;
+    let deadline = 0;
+    let timer;
+
+    function moveTarget() {
+      const padding = 8;
+      const maxX = Math.max(0, field.clientWidth - target.offsetWidth - padding * 2);
+      const maxY = Math.max(0, field.clientHeight - target.offsetHeight - padding * 2);
+      target.style.left = (padding + Math.random() * maxX) + 'px';
+      target.style.top = (padding + Math.random() * maxY) + 'px';
+    }
+
+    function finish() {
+      running = false;
+      clearInterval(timer);
+      target.hidden = true;
+      timeView.textContent = '0';
+      hint.textContent = 'Раунд окончен! Попробуем ещё?';
+      hint.hidden = false;
+      hint.style.display = '';
+      status.textContent = 'Время вышло! Твой счёт: ' + score + '.';
+      start.disabled = false;
+      start.textContent = 'Играть ещё раз';
+    }
+
+    function updateTimer() {
+      if (!running) return;
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) { finish(); return; }
+      timeView.textContent = String(Math.ceil(remaining / 1000));
+    }
+
+    start.addEventListener('click', () => {
+      if (running) return;
+      score = 0;
+      scoreView.textContent = '0';
+      timeView.textContent = '30';
+      running = true;
+      deadline = Date.now() + 30000;
+      start.disabled = true;
+      start.textContent = 'Игра идёт…';
+      hint.style.display = 'none';
+      target.hidden = false;
+      status.textContent = 'Лови кружок!';
+      moveTarget();
+      clearInterval(timer);
+      timer = setInterval(updateTimer, 100);
+    });
+
+    // Один click работает для мыши, касания и клавиатуры без двойного счёта.
+    target.addEventListener('click', () => {
+      if (!running) return;
+      if (Date.now() >= deadline) { finish(); return; }
+      scoreView.textContent = String(++score);
+      moveTarget();
+    });
+    window.addEventListener('resize', () => { if (running) moveTarget(); });
+    document.addEventListener('visibilitychange', updateTimer);
+  </script>
+</body>
+</html>

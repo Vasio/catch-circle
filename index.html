@@ -1,117 +1,248 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#14251e">
-  <title>Поймай кружок</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; padding: 24px 16px; min-height: 100vh; min-height: 100svh; background: #f3f5ef; color: #14251e; font-family: system-ui, sans-serif; }
-    main { max-width: 600px; margin: auto; }
-    .eyebrow { margin: 0 0 12px; color: #516256; font-size: 12px; font-weight: 700; letter-spacing: .15em; }
-    h1 { margin: 0; font-size: clamp(32px, 7vw, 48px); letter-spacing: -.05em; }
-    .intro { color: #516256; line-height: 1.5; }
-    .stats { display: flex; gap: 12px; margin: 24px 0 16px; }
-    .stat { flex: 1; padding: 14px 18px; background: white; border: 1px solid #dbe2d7; border-radius: 16px; }
-    .stat span { display: block; font-size: 13px; color: #516256; }
-    .stat strong { display: block; margin-top: 4px; font-size: 30px; font-variant-numeric: tabular-nums; }
-    #field { position: relative; height: clamp(220px, 45svh, 420px); overflow: hidden; border: 1px solid #cdd7c9; border-radius: 24px; background: #e5ecdf; background-image: radial-gradient(#c4d0bd 1px, transparent 1px); background-size: 22px 22px; }
-    #hint { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: #516256; pointer-events: none; }
-    #target { position: absolute; width: 64px; height: 64px; padding: 0; border: 4px solid #fff; border-radius: 50%; background: #ec6943; box-shadow: 0 4px 0 #b94a2a, 0 8px 20px #14251e26; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; }
-    #target[hidden] { display: none; }
-    button:focus-visible { outline: 3px solid #14251e; outline-offset: 4px; }
-    #start { width: 100%; min-height: 54px; margin-top: 16px; border: 0; border-radius: 16px; background: #14251e; color: white; font: 700 17px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; }
-    #start:disabled { opacity: .65; cursor: default; }
-    #status { min-height: 48px; margin: 14px 0 0; text-align: center; line-height: 1.5; }
-    footer { margin-top: 12px; text-align: center; color: #516256; font-size: 12px; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080b16">
+<meta name="description" content="Пэкмен в браузере: точки, призраки, суперсила и рекорды. Играй с клавиатуры, кнопками или свайпами.">
+<title>Пэкмен · Neon Arcade</title>
+<style>
+:root{color-scheme:dark;--bg:#080b16;--line:#252c42;--muted:#9ba7c2;--yellow:#ffe45d}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;min-height:100vh;min-height:100svh;background:radial-gradient(ellipse at 75% 25%,#161c3a,transparent 55%),var(--bg);color:#f3f5ff;font-family:system-ui,-apple-system,sans-serif}
+button,a{-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer;touch-action:manipulation}button:focus-visible,a:focus-visible,canvas:focus-visible{outline:3px solid var(--yellow);outline-offset:4px}button:disabled{opacity:.4;cursor:default}
+.page{max-width:1090px;margin:auto;padding:28px 32px 20px}.masthead{display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid var(--line);font:700 11px ui-monospace,Consolas,monospace;letter-spacing:.14em}.brand{display:flex;align-items:center;gap:10px}.brand i{width:13px;height:13px;background:var(--yellow);border-radius:50%;box-shadow:0 0 18px #ffe45d66}.edition{color:var(--muted)}
+.layout{display:grid;grid-template-columns:300px minmax(0,532px);gap:64px;justify-content:center;align-items:start;margin-top:30px}.kicker{margin:4px 0 12px;font:600 11px ui-monospace,Consolas,monospace;color:#7185ff;letter-spacing:.14em}h1{margin:0;color:var(--yellow);font:900 clamp(44px,6vw,62px)/1 ui-monospace,Consolas,monospace;letter-spacing:-.07em}h1 span{color:#fff}.intro{max-width:280px;margin:18px 0 24px;color:var(--muted);font-size:14px;line-height:1.65}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#111627b3}.stat-label{display:block;margin-bottom:7px;font:11px ui-monospace,Consolas,monospace;color:var(--muted)}.stat-value{display:block;font:700 25px ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}#score{color:var(--yellow)}#lives{color:#ff8597;letter-spacing:.12em;font-size:23px}
+.guide{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}.guide p{margin:0 0 13px;display:flex;gap:12px;align-items:center;color:#c8d0e4;font-size:12px;line-height:1.5}.dot{flex:none;width:7px;height:7px;margin:0 5px;background:#ffe8c3;border-radius:50%}.dot.big{width:15px;height:15px;margin:0 1px;background:var(--yellow);box-shadow:0 0 14px #ffe45d33}.ghost-icon{flex:none;width:16px;height:17px;border-radius:9px 9px 3px 3px;background:#fd879c}
+.keys{margin:20px 0 10px;color:var(--muted);font-size:12px;line-height:1.7}kbd{padding:2px 5px;border:1px solid #3b435e;border-bottom-width:2px;border-radius:4px;color:#e2e8fa;font:11px ui-monospace,Consolas,monospace}.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,44px);gap:6px;width:max-content;margin:16px auto 0}.direction{border:1px solid #36405d;border-radius:10px;background:#192037;color:#dae2ff;font-size:23px;user-select:none}.direction:active,.direction.active{background:var(--yellow);color:#121623;border-color:var(--yellow)}.direction[data-dir=up]{grid-column:2}.direction[data-dir=left]{grid-column:1;grid-row:2}.direction[data-dir=down]{grid-column:2;grid-row:2}.direction[data-dir=right]{grid-column:3;grid-row:2}
+.game-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 2px 12px;color:var(--muted);font:11px ui-monospace,Consolas,monospace;letter-spacing:.08em}#mode-label{color:var(--yellow)}.board{position:relative;overflow:hidden;border:1px solid #343f69;border-radius:14px;background:#070b19;box-shadow:0 18px 70px #0006,0 0 45px #5364ff0b;touch-action:none}canvas{display:block;width:100%;height:auto;aspect-ratio:19/21}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;background:#070b19b8;backdrop-filter:blur(3px)}.hero-mark{width:66px;height:66px;margin-bottom:22px;border-radius:50%;background:var(--yellow);clip-path:polygon(100% 0,100% 20%,50% 50%,100% 80%,100% 100%,0 100%,0 0)}.overlay h2{margin:0 0 12px;font-size:clamp(24px,5vw,32px);letter-spacing:-.03em}.overlay p{max-width:290px;margin:0 0 24px;color:#c1cce5;font-size:14px;line-height:1.6}.primary{min-height:50px;min-width:200px;padding:12px 28px;border:0;border-radius:10px;background:var(--yellow);color:#111523;font-weight:800;box-shadow:0 5px 0 #baa132}.primary:active{transform:translateY(2px);box-shadow:0 3px 0 #baa132}
+.progress-row{display:flex;justify-content:space-between;gap:16px;margin:16px 2px 8px;font:11px ui-monospace,Consolas,monospace;color:var(--muted)}#power{color:var(--yellow)}.progress-track{height:4px;overflow:hidden;border-radius:3px;background:#242b44}#progress{width:0;height:100%;background:var(--yellow);transition:width .2s}.toolbar{display:flex;gap:10px;margin-top:15px}.secondary{flex:1;min-height:42px;border:1px solid #343d58;border-radius:8px;background:#111627;color:#cdd6ed;font-size:12px}#announcement{min-height:20px;margin:12px 0 0;color:var(--muted);text-align:center;font-size:12px}footer{display:flex;justify-content:space-between;gap:12px;margin-top:32px;padding-top:16px;border-top:1px solid var(--line);color:#8793ad;font-size:11px;line-height:1.5}footer a{color:#b4c0dc;text-underline-offset:3px}
+@media(max-width:800px){.page{max-width:580px;padding:18px 16px}.masthead{padding-bottom:14px}.edition{display:none}.layout{display:flex;flex-direction:column;gap:18px;margin-top:20px}aside,.game-column{width:100%}.kicker{margin:0 0 6px;font-size:10px}h1{font-size:40px}.intro{max-width:none;margin:10px 0 16px;font-size:12px;line-height:1.5}.stats{grid-template-columns:repeat(4,1fr);gap:7px}.stat{padding:10px 9px;border-radius:9px}.stat-label{font-size:9px;margin-bottom:5px}.stat-value{font-size:20px}#lives{font-size:18px;letter-spacing:0}.guide{display:none}.controls{display:flex;align-items:center;justify-content:space-between;gap:15px}.dpad{margin:14px 0 0;grid-template-columns:repeat(3,46px)}.keys{max-width:180px;margin:14px 0 0;font-size:11px}.board{max-width:min(100%,51svh);margin:0 auto}.game-top,.progress-row{font-size:10px}.hero-mark{width:48px;height:48px;margin-bottom:16px}.overlay{padding:16px}.overlay p{font-size:12px;margin-bottom:18px}.overlay h2{font-size:24px}.primary{min-width:170px;min-height:46px;font-size:14px}footer{margin-top:22px}}
+@media(prefers-reduced-motion:reduce){#progress{transition:none}}
+@media(max-width:800px){
+  .layout{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px}
+  aside,.game-column{display:contents}.kicker,.intro,.keys{display:none}h1{font-size:34px}
+  .game-top{order:1;padding:2px 0 0}.board{order:1;width:100%;max-width:min(100%,39svh)}
+  .controls{order:2;justify-content:center}.dpad{margin:0;grid-template-columns:repeat(3,52px);gap:5px}
+  .progress-row,.progress-track,.toolbar,#announcement{order:3;margin:0}.toolbar{margin-top:2px}
+}
+</style>
 </head>
 <body>
-  <main>
-    <p class="eyebrow">МИНИ-ИГРА · 30 СЕКУНД</p>
-    <h1>Поймай кружок</h1>
-    <p class="intro">Нажимай на кружок мышью или пальцем.<br>Каждое попадание — одно очко!</p>
-    <div class="stats">
-      <div class="stat"><span>Счёт</span><strong id="score">0</strong></div>
-      <div class="stat"><span>Осталось секунд</span><strong id="time" role="timer">30</strong></div>
-    </div>
-    <div id="field" aria-label="Игровое поле">
-      <div id="hint">Нажми «Начать игру» — и лови!</div>
-      <button id="target" type="button" aria-label="Поймать кружок" hidden></button>
-    </div>
-    <button id="start" type="button">Начать игру</button>
-    <p id="status" role="status" aria-live="polite">Сколько кружков успеешь поймать?</p>
-    <footer>Без установки · Можно играть без интернета</footer>
-  </main>
-  <script>
-    'use strict';
-    const field = document.getElementById('field');
-    const target = document.getElementById('target');
-    const start = document.getElementById('start');
-    const scoreView = document.getElementById('score');
-    const timeView = document.getElementById('time');
-    const hint = document.getElementById('hint');
-    const status = document.getElementById('status');
-    let score = 0;
-    let running = false;
-    let deadline = 0;
-    let timer;
-
-    function moveTarget() {
-      const padding = 8;
-      const maxX = Math.max(0, field.clientWidth - target.offsetWidth - padding * 2);
-      const maxY = Math.max(0, field.clientHeight - target.offsetHeight - padding * 2);
-      target.style.left = (padding + Math.random() * maxX) + 'px';
-      target.style.top = (padding + Math.random() * maxY) + 'px';
+<div class="page">
+<header class="masthead"><div class="brand"><i aria-hidden="true"></i>NEON ARCADE <span style="color:#64718e">/ 001</span></div><span class="edition">МАЛЕНЬКАЯ ИГРА. БОЛЬШОЙ АППЕТИТ.</span></header>
+<main class="layout">
+<aside>
+<p class="kicker">ЗНАКОМЫЙ ЛАБИРИНТ, НОВЫЙ РЕКОРД</p><h1>PAC<span>MAN</span></h1>
+<p class="intro">Собери все точки. Обхитри призраков.<br>И не забудь, кто здесь самый голодный.</p>
+<div class="stats">
+<div class="stat"><span class="stat-label">СЧЁТ</span><strong class="stat-value" id="score">0</strong></div>
+<div class="stat"><span class="stat-label">РЕКОРД</span><strong class="stat-value" id="best">0</strong></div>
+<div class="stat"><span class="stat-label">УРОВЕНЬ</span><strong class="stat-value" id="level">01</strong></div>
+<div class="stat"><span class="stat-label">ЖИЗНИ</span><strong class="stat-value" id="lives" aria-label="3 жизни">♥♥♥</strong></div>
+</div>
+<div class="guide"><p><i class="dot" aria-hidden="true"></i>Маленькая точка — 10 очков</p><p><i class="dot big" aria-hidden="true"></i>Большая — 50 очков и 7 секунд охоты</p><p><i class="ghost-icon" aria-hidden="true"></i>Синий призрак — от 200 очков</p></div>
+<div class="controls"><p class="keys"><kbd>↑</kbd> <kbd>←</kbd> <kbd>↓</kbd> <kbd>→</kbd> или <kbd>WASD</kbd><br>На телефоне — кнопки или свайпы.<br><kbd>Пробел</kbd> — пауза.</p>
+<div class="dpad" aria-label="Управление направлением"><button class="direction" data-dir="up" type="button" aria-label="Вверх">↑</button><button class="direction" data-dir="left" type="button" aria-label="Влево">←</button><button class="direction" data-dir="down" type="button" aria-label="Вниз">↓</button><button class="direction" data-dir="right" type="button" aria-label="Вправо">→</button></div></div>
+</aside>
+<section class="game-column" aria-label="Игра Пэкмен">
+<div class="game-top"><span id="maze-label">ЛАБИРИНТ 01</span><span id="mode-label">ГОТОВ К СТАРТУ</span></div>
+<div class="board" id="board"><canvas id="game" width="570" height="630" tabindex="0" aria-label="Лабиринт Пэкмена. Управляйте стрелками или WASD; на телефоне — кнопками или свайпами. Соберите все точки и избегайте призраков."></canvas>
+<div class="overlay" id="overlay"><div class="hero-mark" aria-hidden="true"></div><h2 id="overlay-title">Время подкрепиться</h2><p id="overlay-text">Собирай точки и избегай призраков. Большая точка даёт суперсилу! Управление: стрелки, кнопки или свайпы.</p><button class="primary" id="play" type="button">Начать игру</button></div></div>
+<div class="progress-row"><span id="collected">ТОЧКИ: 0 / 0</span><span id="power">БОЛЬШАЯ ТОЧКА = СУПЕРСИЛА</span></div><div class="progress-track" role="progressbar" aria-label="Собранные точки" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressbar"><div id="progress"></div></div>
+<div class="toolbar"><button class="secondary" id="pause" type="button" disabled>Ⅱ Пауза</button><button class="secondary" id="sound" type="button" aria-pressed="false">♪ Звук: выкл.</button></div><p id="announcement" role="status" aria-live="polite">Жёлтый — это ты. Удачной охоты!</p>
+</section></main>
+<footer><span>Своя версия классической аркады · Без установки</span><a href="circle.html">Поймай кружок ↗</a></footer>
+</div>
+<script>
+(() => {
+'use strict';
+const MAP = [
+'###################',
+'#o.......#.......o#',
+'#.##.###.#.###.##.#',
+'#.................#',
+'#.##.#.#####.#.##.#',
+'#....#...#...#....#',
+'####.### # ###.####',
+'####.#       #.####',
+'####.# ## ## #.####',
+'     . #   # .     ',
+'####.# ##### #.####',
+'####.#       #.####',
+'####.# ##### #.####',
+'#........#........#',
+'#.##.###.#.###.##.#',
+'#o.#..... .....#.o#',
+'##.#.#.#####.#.#.##',
+'#....#...#...#....#',
+'#.######.#.######.#',
+'#.................#',
+'###################'
+];
+const W=19,H=21,T=30;
+const DIR={left:[-1,0],right:[1,0],up:[0,-1],down:[0,1]}, OPP={left:'right',right:'left',up:'down',down:'up'};
+const COLORS=['#ff637f','#ffade6','#67e3ed','#ffb66c'];
+const $=id=>document.getElementById(id), canvas=$('game'),ctx=canvas.getContext('2d');
+const ui=Object.fromEntries(['score','best','level','lives','overlay','overlay-title','overlay-text','play','pause','sound','announcement','collected','progress','progressbar','power','maze-label','mode-label'].map(id=>[id,$(id)]));
+const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let mode='ready',score=0,best=0,level=1,lives=3,dots=new Map(),totalDots=0,hero,ghosts,wanted='left';
+let elapsed=0,power=0,combo=0,invulnerable=0,dying=0,previousTime=0,soundOn=false,audio;
+try{best=Math.max(0,Number(localStorage.getItem('neon-pacman-best'))||0)}catch(_){}
+function open(x,y){return y>=0&&y<H&&x>=0&&x<W&&MAP[y][x]!=='#'}
+function neighbor(x,y,direction){
+  if(!DIR[direction])return null;
+  const[dx,dy]=DIR[direction];let nx=x+dx,ny=y+dy;
+  if(y===9&&(nx<0||nx>=W))nx=(nx+W)%W;
+  return open(nx,ny)?{x:nx,y:ny}:null;
+}
+function actor(x,y,dir){return{x,y,dir,next:null,progress:0}}
+function resetActors(){
+  hero=actor(9,15,'left');wanted='left';
+  ghosts=COLORS.map((color,i)=>({...actor(8+i%3,9,i%2?'right':'left'),color,index:i,release:i*2.4+1,eyes:false,wait:0}));
+  elapsed=0;power=0;combo=0;invulnerable=2;
+}
+function loadLevel(){
+  dots=new Map();MAP.forEach((row,y)=>[...row].forEach((tile,x)=>{if(tile==='.'||tile==='o')dots.set(y*W+x,tile)}));
+  totalDots=dots.size;resetActors();updateHud();
+}
+function updateHud(){
+  if(score>best){best=score;try{localStorage.setItem('neon-pacman-best',String(best))}catch(_){}}
+  ui.score.textContent=score;ui.best.textContent=best;ui.level.textContent=String(level).padStart(2,'0');
+  ui.lives.textContent='♥'.repeat(lives)||'—';ui.lives.setAttribute('aria-label','Жизней: '+lives);
+  ui['maze-label'].textContent='ЛАБИРИНТ '+String(level).padStart(2,'0');
+  ui.collected.textContent='ТОЧКИ: '+(totalDots-dots.size)+' / '+totalDots;
+  const percent=Math.round((totalDots-dots.size)/totalDots*100);
+  ui.progress.style.width=percent+'%';ui.progressbar.setAttribute('aria-valuenow',percent);
+}
+function announce(text){ui.announcement.textContent=text}
+function overlay(title,text,button){
+  ui['overlay-title'].textContent=title;ui['overlay-text'].textContent=text;ui.play.textContent=button;ui.overlay.hidden=false;ui.pause.disabled=true;
+  ui['mode-label'].textContent=mode==='clear'?'ЛАБИРИНТ ПРОЙДЕН':mode==='over'?'ИГРА ОКОНЧЕНА':'ПАУЗА';ui.play.focus({preventScroll:true});
+}
+function run(){mode='playing';ui.overlay.hidden=true;ui.pause.disabled=false;ui.pause.textContent='Ⅱ Пауза';ui['mode-label'].textContent='В ИГРЕ';canvas.focus({preventScroll:true})}
+function newGame(){score=0;level=1;lives=3;loadLevel();run();announce('Собери все точки. Большие точки дают 7 секунд охоты!')}
+function togglePause(){
+  if(mode==='playing'){mode='paused';overlay('Пауза','Призраки тоже отдыхают. Продолжим?','Продолжить');announce('Игра на паузе.')}
+  else if(mode==='paused'){run();announce('Поехали!')}
+}
+function initAudio(){if(!soundOn)return;try{audio ||= new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume().catch(()=>{})}catch(_){}}
+function beep(freq,length=.05,type='sine'){
+  if(!soundOn||!audio||audio.state!=='running')return;
+  try{const oscillator=audio.createOscillator(),gain=audio.createGain();oscillator.type=type;oscillator.frequency.setValueAtTime(freq,audio.currentTime);gain.gain.setValueAtTime(.035,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+length);oscillator.connect(gain);gain.connect(audio.destination);oscillator.start();oscillator.stop(audio.currentTime+length)}catch(_){}
+}
+function reverse(a){if(a.next){const origin={x:a.x,y:a.y};a.x=a.next.x;a.y=a.next.y;a.next=origin;a.progress=1-a.progress}a.dir=OPP[a.dir]}
+function setDirection(dir){
+  if(mode!=='playing')return;wanted=dir;if(dir===OPP[hero.dir])reverse(hero);
+  document.querySelectorAll('.direction').forEach(button=>button.classList.toggle('active',button.dataset.dir===dir));
+}
+function position(a){if(!a.next)return{x:a.x,y:a.y};const[dx,dy]=DIR[a.dir];return{x:a.x+dx*a.progress,y:a.y+dy*a.progress}}
+// Tile-centre movement keeps buffered turns and wall collisions exact.
+function move(a,distance,choose,arrive=()=>{}){
+  let remaining=distance;
+  while(remaining>.000001&&mode==='playing'){
+    if(!a.next){const dir=choose(a),next=neighbor(a.x,a.y,dir);if(!next)return;a.dir=dir;a.next=next;a.progress=0}
+    const step=Math.min(remaining,1-a.progress);remaining-=step;a.progress+=step;
+    if(a.progress>=1-1e-8){a.x=a.next.x;a.y=a.next.y;a.next=null;a.progress=0;arrive(a);if(a.wait>0)return}
+  }
+}
+function distances(x,y){
+  const dist=new Map([[y*W+x,0]]),queue=[{x,y}];
+  for(let i=0;i<queue.length;i++){const p=queue[i];for(const dir of Object.keys(DIR)){const n=neighbor(p.x,p.y,dir);if(!n)continue;const key=n.y*W+n.x;if(!dist.has(key)){dist.set(key,dist.get(p.y*W+p.x)+1);queue.push(n)}}}
+  return dist;
+}
+function ghostDirection(g){
+  let choices=Object.keys(DIR).filter(dir=>neighbor(g.x,g.y,dir));if(choices.length>1)choices=choices.filter(dir=>dir!==OPP[g.dir]);
+  let target={x:hero.x,y:hero.y};const scared=power>0&&!g.eyes;
+  if(g.eyes)target={x:9,y:9};
+  else if(!scared){
+    const corners=[{x:17,y:1},{x:1,y:1},{x:17,y:19},{x:1,y:19}];
+    if(elapsed%24<5||(g.index===3&&Math.abs(g.x-hero.x)+Math.abs(g.y-hero.y)<6))target=corners[g.index];
+    else if(g.index===1){for(let i=0;i<3;i++){const n=neighbor(target.x,target.y,hero.dir);if(n)target=n}}
+    else if(g.index===2&&Math.random()<.25)return choices[Math.floor(Math.random()*choices.length)];
+  }
+  const dist=distances(target.x,target.y);
+  return choices.map(dir=>{const n=neighbor(g.x,g.y,dir);return{dir,value:(dist.get(n.y*W+n.x)??1000)*(scared?-1:1)+Math.random()*.3}}).sort((a,b)=>a.value-b.value)[0]?.dir||g.dir;
+}
+function eatDot(){
+  const key=hero.y*W+hero.x,dot=dots.get(key);if(!dot)return;dots.delete(key);score+=dot==='o'?50:10;
+  if(dot==='o'){power=7;combo=0;ghosts.forEach(g=>{if(!g.eyes)reverse(g)});beep(600,.18,'triangle');announce('Суперсила! Синих призраков можно съесть.')}
+  else if(dots.size%2===0)beep(190+dots.size%4*45);
+  updateHud();
+  if(!dots.size){mode='clear';power=0;beep(880,.4,'triangle');overlay('Лабиринт пройден!','Счёт: '+score+'. На следующем уровне призраки станут немного быстрее.','Следующий уровень');announce('Уровень '+level+' пройден!')}
+}
+function loseLife(){
+  lives--;power=0;updateHud();beep(95,.4,'sawtooth');
+  if(!lives){mode='over';overlay('Ещё один заход?','Твой счёт: '+score+'. Рекорд: '+best+'.','Играть снова');announce('Игра окончена. Счёт: '+score+'.')}
+  else{mode='dying';dying=1.1;ui.pause.disabled=true;ui['mode-label'].textContent='ОЙ!';announce('Призрак поймал тебя. Осталось жизней: '+lives+'.')}
+}
+function update(dt){
+  if(mode==='dying'){dying-=dt;if(dying<=0){resetActors();run()}return}
+  if(mode!=='playing')return;
+  elapsed+=dt;invulnerable=Math.max(0,invulnerable-dt);const hadPower=power>0;power=Math.max(0,power-dt);
+  if(hadPower&&!power)announce('Суперсила закончилась. Осторожно, призраки!');
+  move(hero,(5.5+Math.min(level-1,6)*.12)*dt,a=>neighbor(a.x,a.y,wanted)?wanted:a.dir,eatDot);
+  if(mode!=='playing')return;
+  for(const g of ghosts){
+    if(elapsed<g.release)continue;
+    if(g.wait>0){g.wait=Math.max(0,g.wait-dt);if(!g.wait)g.eyes=false;continue}
+    if(g.eyes&&!g.next&&g.x===9&&g.y===9){g.wait=1.5;continue}
+    const speed=g.eyes?8:power>0?3:4.1+Math.min(level-1,8)*.16;
+    move(g,speed*dt,ghostDirection,a=>{if(a.eyes&&a.x===9&&a.y===9)a.wait=1.5});
+    if(g.eyes)continue;
+    const p=position(hero),q=position(g),rawDx=Math.abs(p.x-q.x),dx=Math.min(rawDx,W-rawDx),dy=p.y-q.y;
+    if(dx*dx+dy*dy<.52){
+      if(power>0){g.eyes=true;g.wait=0;score+=200*2**Math.min(combo++,3);updateHud();beep(720,.13,'triangle');announce('Призрак съеден! Продолжай охоту.')}
+      else if(!invulnerable){loseLife();break}
     }
-
-    function finish() {
-      running = false;
-      clearInterval(timer);
-      target.hidden = true;
-      timeView.textContent = '0';
-      hint.textContent = 'Раунд окончен! Попробуем ещё?';
-      hint.hidden = false;
-      hint.style.display = '';
-      status.textContent = 'Время вышло! Твой счёт: ' + score + '.';
-      start.disabled = false;
-      start.textContent = 'Играть ещё раз';
-    }
-
-    function updateTimer() {
-      if (!running) return;
-      const remaining = deadline - Date.now();
-      if (remaining <= 0) { finish(); return; }
-      timeView.textContent = String(Math.ceil(remaining / 1000));
-    }
-
-    start.addEventListener('click', () => {
-      if (running) return;
-      score = 0;
-      scoreView.textContent = '0';
-      timeView.textContent = '30';
-      running = true;
-      deadline = Date.now() + 30000;
-      start.disabled = true;
-      start.textContent = 'Игра идёт…';
-      hint.style.display = 'none';
-      target.hidden = false;
-      status.textContent = 'Лови кружок!';
-      moveTarget();
-      clearInterval(timer);
-      timer = setInterval(updateTimer, 100);
-    });
-
-    // Один click работает для мыши, касания и клавиатуры без двойного счёта.
-    target.addEventListener('click', () => {
-      if (!running) return;
-      if (Date.now() >= deadline) { finish(); return; }
-      scoreView.textContent = String(++score);
-      moveTarget();
-    });
-    window.addEventListener('resize', () => { if (running) moveTarget(); });
-    document.addEventListener('visibilitychange', updateTimer);
-  </script>
+  }
+}
+function drawWalls(){
+  ctx.fillStyle='#101c43';ctx.strokeStyle='#536bff';ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    if(MAP[y][x]!=='#')continue;const left=x*T,top=y*T;ctx.fillRect(left,top,T,T);ctx.beginPath();
+    if(open(x,y-1)){ctx.moveTo(left,top+1);ctx.lineTo(left+T,top+1)}if(open(x,y+1)){ctx.moveTo(left,top+T-1);ctx.lineTo(left+T,top+T-1)}if(open(x-1,y)){ctx.moveTo(left+1,top);ctx.lineTo(left+1,top+T)}if(open(x+1,y)){ctx.moveTo(left+T-1,top);ctx.lineTo(left+T-1,top+T)}ctx.stroke();
+  }
+}
+const maze=document.createElement('canvas');maze.width=W*T;maze.height=H*T;
+function drawAt(a,draw){const p=position(a),x=(p.x+.5)*T,y=(p.y+.5)*T;for(const offset of[-W*T,0,W*T])if(x+offset>-T&&x+offset<W*T+T){ctx.save();ctx.translate(x+offset,y);draw();ctx.restore()}}
+function drawHero(time){
+  if(mode==='playing'&&invulnerable>0&&!reduced&&Math.floor(time/110)%2)return;
+  drawAt(hero,()=>{ctx.rotate({right:0,down:Math.PI/2,left:Math.PI,up:-Math.PI/2}[hero.dir]);const mouth=reduced?.22:.12+Math.abs(Math.sin(time/85))*.22;ctx.fillStyle='#ffe45d';ctx.shadowColor='#ffe45d';ctx.shadowBlur=9;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,T*.39,mouth*Math.PI,(2-mouth)*Math.PI);ctx.closePath();ctx.fill();ctx.shadowBlur=0});
+}
+function drawGhost(g,time){
+  drawAt(g,()=>{
+    const scared=power>0&&!g.eyes,flash=power<2&&!reduced&&Math.floor(time/180)%2;
+    if(!g.eyes){ctx.fillStyle=scared?flash?'#e9efff':'#5068ef':g.color;ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=7;ctx.beginPath();ctx.arc(0,-2,11.5,Math.PI,0);ctx.lineTo(11.5,11);for(let i=0;i<6;i++)ctx.lineTo(11.5-(i+1)*23/6,i%2?11:7);ctx.closePath();ctx.fill();ctx.shadowBlur=0}
+    ctx.fillStyle=scared?'#f8faff':'#fff';for(const x of[-4.7,4.7]){ctx.beginPath();ctx.ellipse(x,-2,scared?2.1:4,scared?2.1:4.8,0,0,Math.PI*2);ctx.fill()}
+    if(scared){ctx.strokeStyle='#f8faff';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-6,6);ctx.lineTo(-3,4);ctx.lineTo(0,6);ctx.lineTo(3,4);ctx.lineTo(6,6);ctx.stroke()}
+    else{const[dx,dy]=DIR[g.dir];ctx.fillStyle='#203565';for(const x of[-4.7,4.7]){ctx.beginPath();ctx.arc(x+dx*1.6,-2+dy*1.9,2.1,0,Math.PI*2);ctx.fill()}}
+  });
+}
+let mazeReady=false;
+function render(time){
+  ctx.clearRect(0,0,W*T,H*T);ctx.fillStyle='#070b19';ctx.fillRect(0,0,W*T,H*T);
+  if(!mazeReady){drawWalls();maze.getContext('2d').drawImage(canvas,0,0);mazeReady=true}else ctx.drawImage(maze,0,0);
+  for(const[key,dot]of dots){const x=key%W,y=Math.floor(key/W);ctx.fillStyle=dot==='o'?'#ffe45d':'#ffe9c9';const radius=dot==='o'?(reduced?6:5.5+Math.sin(time/200)*1.1):2.3;ctx.beginPath();ctx.arc((x+.5)*T,(y+.5)*T,radius,0,Math.PI*2);ctx.fill()}
+  ghosts.forEach(g=>drawGhost(g,time));drawHero(time);ui.power.textContent=power>0?'ОХОТА: '+Math.ceil(power)+' СЕК.':'БОЛЬШАЯ ТОЧКА = СУПЕРСИЛА';
+}
+function frame(time){let delta=previousTime?Math.min((time-previousTime)/1000,.1):0;previousTime=time;while(delta>0){const step=Math.min(delta,1/120);update(step);delta-=step}render(time);requestAnimationFrame(frame)}
+ui.play.addEventListener('click',()=>{initAudio();if(mode==='paused'){run();announce('Поехали!')}else if(mode==='clear'){level++;loadLevel();run();announce('Новый уровень. Приятного аппетита!')}else newGame()});
+ui.pause.addEventListener('click',togglePause);
+ui.sound.addEventListener('click',()=>{soundOn=!soundOn;initAudio();ui.sound.setAttribute('aria-pressed',soundOn);ui.sound.textContent=soundOn?'♪ Звук: вкл.':'♪ Звук: выкл.';beep(440,.1)});
+const keyDirs={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',KeyA:'left',KeyD:'right',KeyW:'up',KeyS:'down'};
+window.addEventListener('keydown',event=>{if(event.altKey||event.ctrlKey||event.metaKey)return;if(keyDirs[event.code]){event.preventDefault();setDirection(keyDirs[event.code])}else if(['Space','Escape','KeyP'].includes(event.code)&&event.target.tagName!=='BUTTON'&&!event.repeat){event.preventDefault();togglePause()}});
+document.querySelectorAll('.direction').forEach(button=>{button.addEventListener('pointerdown',event=>{event.preventDefault();setDirection(button.dataset.dir)});button.addEventListener('click',event=>{if(event.detail===0)setDirection(button.dataset.dir)})});
+let swipe=null;const board=$('board');
+board.addEventListener('pointerdown',event=>{if(event.target!==canvas||mode!=='playing')return;swipe={x:event.clientX,y:event.clientY,id:event.pointerId};board.setPointerCapture(event.pointerId)});
+board.addEventListener('pointermove',event=>{if(!swipe||swipe.id!==event.pointerId)return;const dx=event.clientX-swipe.x,dy=event.clientY-swipe.y;if(Math.max(Math.abs(dx),Math.abs(dy))<14)return;setDirection(Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up');swipe={x:event.clientX,y:event.clientY,id:event.pointerId}});
+for(const event of['pointerup','pointercancel','lostpointercapture'])board.addEventListener(event,()=>{swipe=null});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='playing')togglePause();previousTime=0});
+window.addEventListener('blur',()=>{if(mode==='playing')togglePause()});
+loadLevel();render(0);requestAnimationFrame(frame);
+})();
+</script>
 </body>
 </html>
